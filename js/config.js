@@ -16,7 +16,7 @@ const CONFIG = {
         // do seu Web Service depois de criá-lo (formato
         // https://SEU-SERVICO.onrender.com).
         BASE_URL: window.location.hostname.endsWith('github.io')
-            ? 'https://SEU-SERVICO.onrender.com'
+            ? 'https://study-os-backend-w8o0.onrender.com'
             : '',
         TIMEOUT: 10000,
         ENDPOINTS: {

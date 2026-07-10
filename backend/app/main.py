@@ -1223,6 +1223,22 @@ def seed_data():
             db.commit()
 
         if db.query(Question).count() == 0:
+            # Question.subject_id e' FK pra subjects.id, mas Subject e' sempre
+            # criado por um usuario (user_id proprio, via POST /subjects) -
+            # nenhum existia ainda nesse ponto do seed. subject_id=1/2/3
+            # "funcionava" no SQLite (nao valida FK por padrao), mas quebra no
+            # Postgres com ForeignKeyViolation. Criamos aqui 3 materias sem
+            # dono (user_id=None) so' pra dar uma FK valida a estas perguntas
+            # de demonstracao; elas nao aparecem pra nenhum usuario (toda
+            # consulta de materias filtra por user_id).
+            seed_subjects = {
+                "geografia": Subject(name="Geografia", color="#4A90D9", icon="globe"),
+                "matematica": Subject(name="Matemática", color="#E67E22", icon="calculator"),
+                "biologia": Subject(name="Biologia", color="#27AE60", icon="leaf"),
+            }
+            db.add_all(seed_subjects.values())
+            db.flush()  # popula o .id de cada Subject sem precisar commitar ainda
+
             questions = [
                 Question(
                     text="Qual e a capital do Brasil?",
@@ -1233,7 +1249,7 @@ def seed_data():
                         {"text": "Salvador", "is_correct": False}
                     ],
                     explanation="Brasilia foi inaugurada em 21 de abril de 1960 como nova capital do Brasil, substituindo o Rio de Janeiro.",
-                    subject_id=1,
+                    subject_id=seed_subjects["geografia"].id,
                     difficulty="easy",
                     topic="Geografia"
                 ),
@@ -1246,7 +1262,7 @@ def seed_data():
                         {"text": "8", "is_correct": False}
                     ],
                     explanation="Para resolver: 2x + 4 = 12 -> 2x = 8 -> x = 4.",
-                    subject_id=2,
+                    subject_id=seed_subjects["matematica"].id,
                     difficulty="easy",
                     topic="Algebra"
                 ),
@@ -1259,7 +1275,7 @@ def seed_data():
                         {"text": "Hidrogenio", "is_correct": False}
                     ],
                     explanation="As plantas absorvem CO2 e convertem-no em glicose atraves da fotossintese.",
-                    subject_id=3,
+                    subject_id=seed_subjects["biologia"].id,
                     difficulty="medium",
                     topic="Biologia"
                 )

@@ -144,7 +144,8 @@ connection string do provedor escolhido.
 - **CORS restrito**: só as origens listadas em `CORS_ORIGINS` (por padrão, o
   GitHub Pages deste projeto + localhost) podem chamar a API pelo navegador.
 - **Rate limiting** em rotas sensíveis (login, cadastro, troca de senha,
-  correção de redação) contra força bruta e abuso de APIs externas gratuitas.
+  correção de redação, upload de avatar) contra força bruta, abuso de APIs
+  externas gratuitas e consumo excessivo de CPU/tempo de instância grátis.
 - **Senhas com bcrypt**, tokens JWT assinados com `SECRET_KEY` própria.
 - **`/docs`, `/redoc` e `/openapi.json` desativáveis** via `ENABLE_DOCS=false`
   — por padrão o FastAPI expõe o schema completo da API publicamente.
@@ -155,8 +156,8 @@ connection string do provedor escolhido.
 - **Headers de segurança** (CSP, HSTS, X-Frame-Options, etc.) tanto na API
   (middleware) quanto no HTML (meta tags, já que o GitHub Pages não permite
   configurar headers HTTP customizados).
-- **Sem PII em rotas públicas**: o leaderboard (sem autenticação) mostra só
-  nome de exibição, nunca email/username.
+- **Sem rotas de dados abertas**: o leaderboard (antes público) agora exige
+  login, e mesmo autenticado mostra só nome de exibição, nunca email/username.
 
 ## 🔧 Arquitetura
 

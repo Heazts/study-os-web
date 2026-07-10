@@ -1,3 +1,5 @@
+import io
+
 import app.main as main_module
 
 
@@ -101,6 +103,25 @@ def test_login_rate_limited_after_repeated_failures(client):
         last_status = client.post(
             "/api/v1/auth/login",
             data={"username": "ratelimituser", "password": "wrongpassword"}
+        ).status_code
+    assert last_status == 429
+
+
+def test_avatar_upload_is_rate_limited(auth_client):
+    from PIL import Image
+
+    def make_png():
+        img = Image.new("RGB", (10, 10), color=(10, 20, 30))
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        buf.seek(0)
+        return buf
+
+    last_status = None
+    for _ in range(15):
+        last_status = auth_client.post(
+            "/api/v1/auth/me/avatar",
+            files={"file": ("avatar.png", make_png(), "image/png")}
         ).status_code
     assert last_status == 429
 
@@ -311,12 +332,17 @@ def test_enem_simulados_ordered_most_recent_first(auth_client):
 
 
 # ============================================================
-# LEADERBOARD (rota publica, sem autenticacao)
+# LEADERBOARD (exige autenticacao; nao expoe username/email)
 # ============================================================
+
+def test_leaderboard_requires_authentication(client):
+    resp = client.get("/api/v1/leaderboard")
+    assert resp.status_code == 401
+
 
 def test_leaderboard_does_not_expose_username_or_email(auth_client):
     # O frontend usa o proprio email como username (ver register() em
-    # api.js), entao a rota publica (sem autenticacao) nao pode devolver nem
+    # api.js), entao a rota (mesmo exigindo login) nao pode devolver nem
     # "username" nem "email" - so' "name" (full_name, ja validado contra
     # linguagem impropria). Checa a forma da resposta em vez de um usuario
     # especifico, ja que o banco de teste e' compartilhado entre os testes do

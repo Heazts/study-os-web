@@ -1399,6 +1399,11 @@ def change_password(payload: PasswordChange, current_user: User = Depends(get_cu
 
 @app.post("/api/v1/auth/me/avatar", response_model=UserResponse)
 async def upload_avatar(file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Decodificar/redimensionar imagem e' a rota mais cara em CPU de todo o
+    # backend - sem limite, um script repetindo o upload em loop conseguia
+    # consumir bastante do tempo de instancia gratuito do Render so' com isso.
+    _enforce_rate_limit("avatar-upload", str(current_user.id), max_attempts=10, window_seconds=60)
+
     MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8MB no upload cru, antes de comprimir
     if not (file.content_type or "").startswith("image/"):
         raise HTTPException(status_code=400, detail="O arquivo precisa ser uma imagem")
@@ -1913,12 +1918,12 @@ def get_achievements(current_user: User = Depends(get_current_user), db: Session
     }
 
 @app.get("/api/v1/leaderboard")
-def get_leaderboard(db: Session = Depends(get_db)):
-    # Rota publica, sem autenticacao - devolvia "username", mas no frontend o
-    # username E' o proprio email do usuario (ver register() em api.js), entao
-    # isto expunha o email real de todo mundo no top 10 para qualquer visitante
-    # nao autenticado. full_name e' a informacao pensada para aparecer
-    # publicamente (e' o mesmo campo ja validado contra linguagem impropria).
+def get_leaderboard(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Antes era publica/sem autenticacao. Ja nao expõe email/username (so'
+    # full_name, ja validado contra linguagem impropria), mas com o cadastro
+    # agora sendo por convite (instancia pessoal, ver README) nao faz sentido
+    # deixar QUALQUER pessoa na internet ver nomes e atividade de quem usa o
+    # app sem nem precisar logar - exigir autenticacao fecha essa sobra.
     users = db.query(User).order_by(User.xp.desc()).limit(10).all()
     return [
         {

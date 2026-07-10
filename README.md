@@ -136,29 +136,6 @@ ou [Neon](https://neon.tech) — veja `backend/.env.example`). O driver já vem
 no `requirements.txt`, então basta definir a variável `DATABASE_URL` com a
 connection string do provedor escolhido.
 
-## 🔒 Segurança
-
-- **Cadastro por convite**: com `REGISTRATION_CODE` definida no backend, só
-  quem souber o código consegue criar conta — pensado pra instância pessoal,
-  não pra uso público geral.
-- **CORS restrito**: só as origens listadas em `CORS_ORIGINS` (por padrão, o
-  GitHub Pages deste projeto + localhost) podem chamar a API pelo navegador.
-- **Rate limiting** em rotas sensíveis (login, cadastro, troca de senha,
-  correção de redação, upload de avatar) contra força bruta, abuso de APIs
-  externas gratuitas e consumo excessivo de CPU/tempo de instância grátis.
-- **Senhas com bcrypt**, tokens JWT assinados com `SECRET_KEY` própria.
-- **`/docs`, `/redoc` e `/openapi.json` desativáveis** via `ENABLE_DOCS=false`
-  — por padrão o FastAPI expõe o schema completo da API publicamente.
-- **Dependências sem CVEs conhecidas** de maior gravidade na data desta
-  revisão (jul/2026) — atenção especial ao Starlette (via FastAPI), que
-  tinha uma falha crítica de bypass de autenticação (CVE-2026-48710)
-  corrigida só em versões recentes.
-- **Headers de segurança** (CSP, HSTS, X-Frame-Options, etc.) tanto na API
-  (middleware) quanto no HTML (meta tags, já que o GitHub Pages não permite
-  configurar headers HTTP customizados).
-- **Sem rotas de dados abertas**: o leaderboard (antes público) agora exige
-  login, e mesmo autenticado mostra só nome de exibição, nunca email/username.
-
 ## 🔧 Arquitetura
 
 ```

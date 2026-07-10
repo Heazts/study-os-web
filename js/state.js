@@ -200,9 +200,9 @@ class StateManager {
     // Operações de Autenticação
     // ========================================
 
-    async register(email, password, name) {
+    async register(email, password, name, registrationCode) {
         try {
-            const response = await api.register(email, password, name);
+            const response = await api.register(email, password, name, registrationCode);
             const rawUser = response.user || {};
             const user = {
                 id: rawUser.id,

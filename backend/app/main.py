@@ -103,26 +103,37 @@ app = FastAPI(
 
 # CORS
 #
-# allow_origins=["*"] combinado com allow_credentials=True e' uma configuracao
-# insegura: para atender a esse par, o middleware passa a refletir de volta
-# qualquer Origin recebido (em vez do literal "*"), o que permite que
-# QUALQUER site faca requisicoes autenticadas com credenciais (cookies) contra
-# esta API. Como a autenticacao aqui e' via header "Authorization: Bearer"
-# (nao cookies), nao precisamos de allow_credentials — desativa-lo fecha essa
-# brecha sem quebrar nada.
+# Este projeto foi pensado pra uma instalacao pessoal/privada (ver README):
+# so' o(s) frontend(s) realmente usados devem poder chamar esta API a partir
+# do navegador. Antes era allow_origins=["*"] (qualquer site podia chamar),
+# o que fazia sentido pra uma demo publica generica mas nao pra uma instancia
+# privada. CORS_ORIGINS permite configurar isso por ambiente; o default ja
+# cobre o GitHub Pages deste projeto e o dev local (start_all.py/server.py na
+# porta 3000, docker-compose/nginx na porta 80).
+#
+# Importante: CORS so' protege chamadas feitas PELO NAVEGADOR de outro site -
+# nao impede alguem de chamar a API direto (curl, Postman etc.). Quem
+# realmente controla quem pode criar conta e' o REGISTRATION_CODE abaixo.
+_DEFAULT_CORS_ORIGINS = "https://heazts.github.io,http://localhost:3000,http://127.0.0.1:3000,http://localhost"
+CORS_ORIGINS = [origin.strip() for origin in os.environ.get("CORS_ORIGINS", _DEFAULT_CORS_ORIGINS).split(",") if origin.strip()]
+
+# allow_origins (lista fechada) combinado com allow_credentials=True seria uma
+# configuracao insegura (o middleware passaria a refletir de volta qualquer
+# Origin recebido). Como a autenticacao aqui e' via header
+# "Authorization: Bearer" (nao cookies), nao precisamos de allow_credentials.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# nginx.conf ja aplica estes mesmos headers quando o frontend e' servido por
-# tras do nginx (docker-compose), mas essa e' so' uma das formas de rodar o
-# projeto: no deploy unificado (Dockerfile da raiz, pensado para o Hugging
-# Face Spaces) e' o proprio uvicorn/FastAPI quem serve tudo, sem nginx na
-# frente - sem isto aqui, esses deploys ficavam sem nenhum destes headers.
+# nginx.conf ja aplica a maioria destes headers quando o frontend e' servido
+# por tras do nginx (docker-compose), mas essa e' so' uma das formas de rodar
+# o projeto: no deploy atual (GitHub Pages + Render) e' o proprio
+# uvicorn/FastAPI quem responde direto, sem nginx na frente - sem isto aqui,
+# as respostas da API ficavam sem nenhum destes headers.
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
@@ -130,6 +141,10 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Render (e qualquer PaaS atras de um proxy TLS) so' expoe a API via
+    # HTTPS de qualquer forma, mas o header deixa isso explicito pro navegador
+    # nunca tentar um downgrade para HTTP neste host.
+    response.headers["Strict-Transport-Security"] = "max-age=63072000"
     return response
 
 # ============================================================
@@ -388,6 +403,11 @@ class UserCreate(BaseModel):
     username: str
     full_name: str
     password: str
+    # Opcional aqui de proposito: so' e' exigido em runtime (ver register())
+    # quando a variavel de ambiente REGISTRATION_CODE estiver definida. Sem
+    # isso, testes e dev local (que nao configuram essa variavel) continuam
+    # cadastrando livremente, sem precisar mandar este campo.
+    registration_code: Optional[str] = None
 
     @field_validator("email")
     @classmethod
@@ -1295,6 +1315,14 @@ seed_data()
 @app.post("/api/v1/auth/register", response_model=UserResponse)
 def register(user: UserCreate, request: Request, db: Session = Depends(get_db)):
     _enforce_rate_limit("register", request.client.host if request.client else "unknown")
+
+    # Le a variavel a cada chamada (em vez de guardar em uma constante no
+    # import do modulo) de proposito: e' o que permite os testes ligarem essa
+    # trava so' no teste que precisa dela, sem afetar os outros. Se nao
+    # definida (dev local), o cadastro fica aberto, como sempre foi.
+    expected_code = os.environ.get("REGISTRATION_CODE")
+    if expected_code and user.registration_code != expected_code:
+        raise HTTPException(status_code=403, detail="Código de convite inválido")
 
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:

@@ -1,8 +1,8 @@
 # Blueprint do Render (render.com/docs/blueprint-spec) para o backend.
 # Uso: no Render, "New +" -> "Blueprint" -> aponte para este repositório.
-# Ele configura o Web Service sozinho; só falta preencher DATABASE_URL
-# manualmente (veja backend/.env.example) porque isso não pode ser gerado
-# automaticamente - é a connection string do seu Postgres (Supabase/Neon).
+# Ele configura o Web Service sozinho; só faltam preencher manualmente
+# DATABASE_URL e REGISTRATION_CODE (não podem ser gerados automaticamente -
+# veja backend/.env.example).
 services:
   - type: web
     name: study-os-backend
@@ -16,3 +16,15 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      # Sem isso, cadastro fica aberto pra qualquer um que encontrar a URL da
+      # API. Defina um valor (ex.: com "python -c \"import secrets;
+      # print(secrets.token_urlsafe(16))\"") e use o mesmo na tela de
+      # cadastro do frontend.
+      - key: REGISTRATION_CODE
+        sync: false
+      # CORS_ORIGINS (opcional) NÃO está listado aqui de propósito: se o
+      # Render criar essa variável em branco (em vez de simplesmente não
+      # criá-la), o código passaria a bloquear TODAS as origens em vez de cair
+      # no default seguro já embutido em backend/app/main.py. Só defina essa
+      # variável manualmente (Environment -> Add Environment Variable) se o
+      # domínio do seu GitHub Pages for diferente de heazts.github.io.

@@ -161,7 +161,7 @@ class API {
     // AUTENTICAÇÃO
     // ========================================
 
-    async register(email, password, name) {
+    async register(email, password, name, registrationCode) {
         // O backend exige email, username e full_name. Usamos o próprio
         // email como username (a UI só pede email, então isso é transparente
         // para quem está usando a plataforma).
@@ -169,7 +169,8 @@ class API {
             email,
             username: email,
             full_name: name,
-            password
+            password,
+            registration_code: registrationCode
         });
 
         // O endpoint de registro não devolve token — fazemos login em

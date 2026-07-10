@@ -6,6 +6,24 @@
     <meta name="description" content="Study OS - Plataforma completa para estudantes com IA, planejamento e gamificação">
     <title>Study OS — Sua plataforma de estudos inteligente</title>
 
+    <!-- O GitHub Pages serve arquivos estáticos sem deixar configurar headers
+         HTTP customizados (diferente de Netlify/Vercel) — por isso a Content
+         Security Policy e a política de referrer vão aqui, via <meta>, em vez
+         de nginx.conf ou do middleware do backend (que só cobre respostas da
+         API, não esta página). Ajuste as origens abaixo se adicionar algum
+         CDN/serviço novo, senão o navegador bloqueia silenciosamente. -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.tailwindcss.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+        font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+        img-src 'self' data:;
+        connect-src 'self' https://study-os-backend-w8o0.onrender.com https://api.enem.dev;
+        base-uri 'self';
+        form-action 'self';
+    ">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <!-- Fonte: Inter, metricamente compatível com San Francisco/SF Pro — em
          dispositivos Apple, -apple-system/BlinkMacSystemFont (ver styles.css)
          já usa a fonte nativa do sistema; Inter é o fallback em todo o resto. -->

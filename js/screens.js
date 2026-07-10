@@ -294,20 +294,23 @@ const Screens = {
         const nameInput = Components.Input('Nome completo', 'text', 'Como podemos te chamar?', '', null, 'user');
         const emailInput = Components.Input('Email', 'email', 'seu@email.com', '', null, 'envelope');
         const passwordInput = Components.Input('Senha', 'password', 'Mínimo 8 caracteres', '', null, 'lock');
+        const codeInput = Components.Input('Código de convite', 'password', 'Fornecido por quem administra este app', '', null, 'key');
 
         const nameField = nameInput.querySelector('input');
         const emailField = emailInput.querySelector('input');
         const passwordField = passwordInput.querySelector('input');
+        const codeField = codeInput.querySelector('input');
 
         form.appendChild(nameInput);
         form.appendChild(emailInput);
         form.appendChild(passwordInput);
+        form.appendChild(codeInput);
 
         let registerBtn = null;
         let isSubmitting = false;
 
         const updateRegisterButtonState = () => {
-            const isValid = nameField.value.trim() && emailField.value.trim() && passwordField.value.trim().length >= 8;
+            const isValid = nameField.value.trim() && emailField.value.trim() && passwordField.value.trim().length >= 8 && codeField.value.trim();
             const shouldDisable = !isValid || isSubmitting;
             registerBtn.disabled = shouldDisable;
             registerBtn.classList.toggle('disabled', shouldDisable);
@@ -318,8 +321,9 @@ const Screens = {
             const name = nameField.value.trim();
             const email = emailField.value.trim();
             const password = passwordField.value;
+            const registrationCode = codeField.value.trim();
 
-            if (!name || !email || !password) {
+            if (!name || !email || !password || !registrationCode) {
                 Components.Toast('Preencha todos os campos para continuar', 'warning');
                 return;
             }
@@ -330,7 +334,7 @@ const Screens = {
             updateRegisterButtonState();
 
             try {
-                const success = await state.register(email, password, name);
+                const success = await state.register(email, password, name, registrationCode);
                 if (success) {
                     Components.Toast('Conta criada. Vamos começar!', 'success');
                 } else {
@@ -351,6 +355,7 @@ const Screens = {
         nameField.addEventListener('input', updateRegisterButtonState);
         emailField.addEventListener('input', updateRegisterButtonState);
         passwordField.addEventListener('input', updateRegisterButtonState);
+        codeField.addEventListener('input', updateRegisterButtonState);
         updateRegisterButtonState();
 
         form.addEventListener('submit', (e) => {

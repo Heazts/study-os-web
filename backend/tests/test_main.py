@@ -19,6 +19,42 @@ def test_register_rejects_weak_password(client):
     assert resp.status_code == 422
 
 
+def test_register_open_when_registration_code_not_configured(client, monkeypatch):
+    monkeypatch.delenv("REGISTRATION_CODE", raising=False)
+    resp = client.post("/api/v1/auth/register", json={
+        "email": "semrestricao@example.com", "username": "semrestricao@example.com",
+        "full_name": "Sem Restricao", "password": "senha12345"
+    })
+    assert resp.status_code == 200
+
+
+def test_register_rejects_missing_or_wrong_registration_code(client, monkeypatch):
+    monkeypatch.setenv("REGISTRATION_CODE", "codigo-secreto")
+
+    missing = client.post("/api/v1/auth/register", json={
+        "email": "semcodigo@example.com", "username": "semcodigo@example.com",
+        "full_name": "Sem Codigo", "password": "senha12345"
+    })
+    assert missing.status_code == 403
+
+    wrong = client.post("/api/v1/auth/register", json={
+        "email": "codigoerrado@example.com", "username": "codigoerrado@example.com",
+        "full_name": "Codigo Errado", "password": "senha12345",
+        "registration_code": "chute-qualquer"
+    })
+    assert wrong.status_code == 403
+
+
+def test_register_accepts_correct_registration_code(client, monkeypatch):
+    monkeypatch.setenv("REGISTRATION_CODE", "codigo-secreto")
+    resp = client.post("/api/v1/auth/register", json={
+        "email": "codigocerto@example.com", "username": "codigocerto@example.com",
+        "full_name": "Codigo Certo", "password": "senha12345",
+        "registration_code": "codigo-secreto"
+    })
+    assert resp.status_code == 200
+
+
 def test_register_rejects_invalid_email(client):
     resp = client.post("/api/v1/auth/register", json={
         "email": "not-an-email", "username": "bademailuser",
@@ -35,6 +71,14 @@ def test_register_rejects_duplicate_email(client):
 
     second = client.post("/api/v1/auth/register", json=dict(payload, username="dupuser2"))
     assert second.status_code == 400
+
+
+def test_cors_allows_only_configured_origins(client):
+    allowed = client.get("/health", headers={"Origin": "https://heazts.github.io"})
+    assert allowed.headers.get("access-control-allow-origin") == "https://heazts.github.io"
+
+    blocked = client.get("/health", headers={"Origin": "https://evil.example.com"})
+    assert "access-control-allow-origin" not in blocked.headers
 
 
 def test_me_requires_authentication(client):

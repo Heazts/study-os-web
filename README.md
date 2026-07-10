@@ -1,39 +1,32 @@
----
-title: Study OS
-emoji: 📚
-colorFrom: indigo
-colorTo: purple
-sdk: docker
-app_port: 7860
-pinned: false
-license: mit
----
+# 📚 Study OS
 
-# 📚 Study OS — Versão Web
+Plataforma pessoal de estudos com planejamento, gamificação e integração com
+o banco de questões público do ENEM.
 
-Plataforma de estudos com planejamento, gamificação e integração com o banco
-de questões público do ENEM — SPA em HTML/CSS/JS puro (sem build step) por
-cima de uma API FastAPI.
+**Acesse em: https://heazts.github.io/study-os-web/**
 
-> ⚠️ **Sobre a "IA" deste projeto**: os recursos de explicação de conteúdo,
-> resumo, flashcards e análise de questões (`AIService` em
-> `backend/app/main.py`) usam respostas geradas por template, não um modelo de
-> linguagem de verdade — servem como estrutura pronta para plugar uma IA real
-> (ex.: API da OpenAI/Anthropic) depois. A **correção de redação** é a exceção:
-> ela já usa uma verificação gramatical real via [LanguageTool](https://languagetool.org)
-> (API pública gratuita), mas não avalia argumentação/coesão como um professor
-> faria — isso fica claro no feedback devolvido ao usuário.
+> Cadastro é por convite — precisa do código de acesso para criar conta.
 
 ## ✨ Funcionalidades
 
 - Autenticação por JWT (registro/login)
 - Dashboard com estatísticas reais (nível, XP, sequência, gráfico semanal)
 - Anotações, tarefas e planos de estudo
-- Questões reais de provas passadas do ENEM (2009–2023) via [api.enem.dev](https://enem.dev), somente leitura e sem depender do backend
+- Questões reais de provas passadas do ENEM (2009–2023) via [api.enem.dev](https://enem.dev)
 - Redações com correção gramatical automática
 - Agenda de provas
 - Gamificação (níveis, XP, conquistas, sequência de estudo)
 - Responsivo (desktop/tablet/mobile)
+
+> ⚠️ **Sobre a "IA" deste projeto**: os recursos de explicação de conteúdo,
+> resumo, flashcards e análise de questões usam respostas geradas por
+> template, não um modelo de linguagem de verdade. A **correção de redação**
+> é a exceção: usa verificação gramatical real via [LanguageTool](https://languagetool.org),
+> mas não avalia argumentação/coesão como um professor faria — isso fica
+> claro no feedback devolvido ao usuário.
+
+<details>
+<summary><strong>Detalhes técnicos</strong> (rodar localmente, deploy, arquitetura, endpoints)</summary>
 
 ## 🚀 Rodando localmente
 
@@ -68,10 +61,9 @@ desenvolvimento primeiro: `pip install -r backend/requirements-dev.txt`.
 
 ### Variáveis de ambiente do backend
 
-Copie `backend/.env.example` para `backend/.env` e ajuste `SECRET_KEY`
-(gere uma com `python -c "import secrets; print(secrets.token_hex(32))"`).
-Sem isso o backend funciona, mas gera uma chave aleatória a cada restart —
-todos os tokens de login emitidos antes ficam inválidos.
+Copie `backend/.env.example` para `backend/.env` e ajuste:
+- `SECRET_KEY` — gere uma com `python -c "import secrets; print(secrets.token_hex(32))"`. Sem isso o backend funciona, mas gera uma chave aleatória a cada restart — todos os tokens de login emitidos antes ficam inválidos.
+- `REGISTRATION_CODE` — se definida, exige esse código na tela de cadastro (uso pessoal/privado). Em branco, cadastro fica aberto.
 
 ## 🐳 Docker (dois containers, para dev/produção "de verdade")
 
@@ -98,14 +90,15 @@ branch" → Branch: `main`, pasta `/ (root)`. Fica em
 (750h/mês, o serviço "dorme" depois de 15 min sem uso — a primeira
 requisição depois disso demora um pouco mais pra responder).
 
-1. Crie o banco primeiro (veja seção abaixo) e tenha a connection string em mãos.
+1. Crie o banco primeiro (Supabase ou Neon, veja abaixo) e tenha a connection string em mãos.
 2. Em [render.com](https://render.com), **New +** → **Blueprint** → conecte
    este repositório. O `render.yaml` na raiz já configura o Web Service
    (`rootDir: backend`, build/start commands, `SECRET_KEY` gerada
-   automaticamente) — só falta colar `DATABASE_URL` quando pedido.
+   automaticamente) — só falta colar `DATABASE_URL` e `REGISTRATION_CODE`
+   quando pedido.
 3. Aguarde o deploy. A URL fica algo como `https://study-os-backend.onrender.com`.
-4. Edite `js/config.js`: troque o placeholder `SEU-SERVICO.onrender.com` pela
-   URL real do seu Web Service, commit e push.
+4. Edite `js/config.js`: troque o placeholder pela URL real do seu Web
+   Service, commit e push.
 
 > **Nota sobre o Hugging Face Spaces**: o `Dockerfile` na raiz do projeto e a
 > imagem unificada (backend + frontend no mesmo processo) foram pensados
@@ -142,6 +135,22 @@ Postgres gerenciado gratuito (ex.: [Supabase](https://supabase.com/database)
 ou [Neon](https://neon.tech) — veja `backend/.env.example`). O driver já vem
 no `requirements.txt`, então basta definir a variável `DATABASE_URL` com a
 connection string do provedor escolhido.
+
+## 🔒 Segurança
+
+- **Cadastro por convite**: com `REGISTRATION_CODE` definida no backend, só
+  quem souber o código consegue criar conta — pensado pra instância pessoal,
+  não pra uso público geral.
+- **CORS restrito**: só as origens listadas em `CORS_ORIGINS` (por padrão, o
+  GitHub Pages deste projeto + localhost) podem chamar a API pelo navegador.
+- **Rate limiting** em rotas sensíveis (login, cadastro, troca de senha,
+  correção de redação) contra força bruta e abuso de APIs externas gratuitas.
+- **Senhas com bcrypt**, tokens JWT assinados com `SECRET_KEY` própria.
+- **Headers de segurança** (CSP, HSTS, X-Frame-Options, etc.) tanto na API
+  (middleware) quanto no HTML (meta tags, já que o GitHub Pages não permite
+  configurar headers HTTP customizados).
+- **Sem PII em rotas públicas**: o leaderboard (sem autenticação) mostra só
+  nome de exibição, nunca email/username.
 
 ## 🔧 Arquitetura
 
@@ -197,6 +206,8 @@ const response = await api.login('usuario', 'senha');   // token salvo em localS
 if (api.isAuthenticated()) { /* ... */ }
 await api.logout();
 ```
+
+</details>
 
 ## 📄 Licença
 

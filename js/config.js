@@ -5,17 +5,18 @@
 const CONFIG = {
     // API Configuration
     API: {
-        // Quando frontend e backend sao servidos pela mesma origem (dev local,
-        // docker-compose, ou o Dockerfile único do Hugging Face Spaces), um
-        // caminho relativo funciona direto, sem problema de CORS.
+        // Quando frontend e backend sao servidos pela mesma origem (dev local
+        // ou docker-compose), um caminho relativo funciona direto, sem
+        // problema de CORS.
         //
         // Já o GitHub Pages só hospeda arquivos estáticos (não roda o backend
         // Python) — o frontend fica em *.github.io e o backend precisa estar
-        // em outro lugar (ex.: Hugging Face Spaces). Nesse caso é preciso a
-        // URL completa do backend: troque abaixo pela URL do seu Space depois
-        // de criá-lo (formato https://SEU-USUARIO-NOME-DO-SPACE.hf.space).
+        // em outro lugar (ex.: Render, veja render.yaml e o README). Nesse
+        // caso é preciso a URL completa do backend: troque abaixo pela URL
+        // do seu Web Service depois de criá-lo (formato
+        // https://SEU-SERVICO.onrender.com).
         BASE_URL: window.location.hostname.endsWith('github.io')
-            ? 'https://SEU-USUARIO-NOME-DO-SPACE.hf.space'
+            ? 'https://SEU-SERVICO.onrender.com'
             : '',
         TIMEOUT: 10000,
         ENDPOINTS: {

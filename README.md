@@ -85,7 +85,38 @@ Sobe o backend (`backend/Dockerfile`) e o frontend com nginx na frente
 no seu shell antes de subir (veja comentário em `docker-compose.yml`), senão
 o backend gera uma chave aleatória a cada restart do container.
 
-## 🤗 Deploy no Hugging Face Spaces
+## 🌐 Deploy 100% grátis (frontend no GitHub Pages + backend no Render)
+
+Como o GitHub Pages só serve arquivos estáticos (não roda Python), o projeto
+é pensado para rodar com frontend e backend em lugares separados:
+
+**Frontend (GitHub Pages)**: Settings → Pages → Source: "Deploy from a
+branch" → Branch: `main`, pasta `/ (root)`. Fica em
+`https://<seu-usuario>.github.io/<repo>/`.
+
+**Backend (Render)**: o Render tem tier gratuito real para Web Services
+(750h/mês, o serviço "dorme" depois de 15 min sem uso — a primeira
+requisição depois disso demora um pouco mais pra responder).
+
+1. Crie o banco primeiro (veja seção abaixo) e tenha a connection string em mãos.
+2. Em [render.com](https://render.com), **New +** → **Blueprint** → conecte
+   este repositório. O `render.yaml` na raiz já configura o Web Service
+   (`rootDir: backend`, build/start commands, `SECRET_KEY` gerada
+   automaticamente) — só falta colar `DATABASE_URL` quando pedido.
+3. Aguarde o deploy. A URL fica algo como `https://study-os-backend.onrender.com`.
+4. Edite `js/config.js`: troque o placeholder `SEU-SERVICO.onrender.com` pela
+   URL real do seu Web Service, commit e push.
+
+> **Nota sobre o Hugging Face Spaces**: o `Dockerfile` na raiz do projeto e a
+> imagem unificada (backend + frontend no mesmo processo) foram pensados
+> originalmente pra lá, mas a partir de julho de 2026 o SDK Docker do HF
+> Spaces passou a exigir plano **PRO** mesmo no free tier (mudança recente e
+> sem aviso oficial da própria Hugging Face). Se você tiver PRO ou essa
+> política mudar de novo, o `Dockerfile` continua funcionando normalmente —
+> as instruções antigas ficam abaixo.
+
+<details>
+<summary>Deploy no Hugging Face Spaces (requer plano PRO atualmente)</summary>
 
 O Hugging Face Spaces (SDK Docker) só expõe **um** container/porta por Space,
 então existe um `Dockerfile` na raiz do projeto separado do fluxo acima: ele
@@ -102,13 +133,14 @@ na porta `7860` esperada pela plataforma.
 4. Aguarde o build — o Space fica acessível na URL padrão
    `https://huggingface.co/spaces/<seu-usuario>/<nome-do-space>`.
 
-**Armazenamento é efêmero por padrão**: no tier gratuito, o SQLite em
-`/app/data/study_os.db` some a cada rebuild/restart do Space, a não ser que
-você ative "Persistent Storage" nas configurações do Space. Aceitável para
-uma demo pública; para persistência real, ative esse recurso ou troque
-`DATABASE_URL` por um Postgres gerenciado gratuito (ex.: [Supabase](https://supabase.com/database)
+</details>
+
+**Armazenamento é efêmero em qualquer uma dessas opções**: tanto o Render
+quanto o HF Spaces (sem "Persistent Storage") apagam o SQLite a cada
+rebuild/restart. Para persistência real, troque `DATABASE_URL` por um
+Postgres gerenciado gratuito (ex.: [Supabase](https://supabase.com/database)
 ou [Neon](https://neon.tech) — veja `backend/.env.example`). O driver já vem
-no `requirements.txt`, então basta definir o secret `DATABASE_URL` com a
+no `requirements.txt`, então basta definir a variável `DATABASE_URL` com a
 connection string do provedor escolhido.
 
 ## 🔧 Arquitetura
@@ -117,9 +149,10 @@ connection string do provedor escolhido.
 study-os-web/
 ├── start_all.py              # Sobe backend + frontend juntos (dev local)
 ├── server.py                 # Servidor estático do frontend (dev manual)
-├── Dockerfile                # Imagem única (backend serve o frontend) — Hugging Face Spaces
+├── Dockerfile                # Imagem única (backend serve o frontend) — Hugging Face Spaces (requer PRO)
 ├── Dockerfile.frontend        # Imagem só do frontend (nginx) — usada pelo docker-compose
 ├── docker-compose.yml        # Backend + frontend como containers separados (dev/prod local)
+├── render.yaml                # Blueprint do Render — deploy grátis do backend (ver seção de deploy)
 ├── nginx.conf                 # Config do nginx usada por Dockerfile.frontend
 ├── index.html
 ├── css/styles.css

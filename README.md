@@ -146,6 +146,12 @@ connection string do provedor escolhido.
 - **Rate limiting** em rotas sensíveis (login, cadastro, troca de senha,
   correção de redação) contra força bruta e abuso de APIs externas gratuitas.
 - **Senhas com bcrypt**, tokens JWT assinados com `SECRET_KEY` própria.
+- **`/docs`, `/redoc` e `/openapi.json` desativáveis** via `ENABLE_DOCS=false`
+  — por padrão o FastAPI expõe o schema completo da API publicamente.
+- **Dependências sem CVEs conhecidas** de maior gravidade na data desta
+  revisão (jul/2026) — atenção especial ao Starlette (via FastAPI), que
+  tinha uma falha crítica de bypass de autenticação (CVE-2026-48710)
+  corrigida só em versões recentes.
 - **Headers de segurança** (CSP, HSTS, X-Frame-Options, etc.) tanto na API
   (middleware) quanto no HTML (meta tags, já que o GitHub Pages não permite
   configurar headers HTTP customizados).

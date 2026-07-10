@@ -11,6 +11,11 @@ def test_health_check(client):
     assert resp.json()["status"] == "healthy"
 
 
+def test_docs_enabled_by_default(client):
+    resp = client.get("/openapi.json")
+    assert resp.status_code == 200
+
+
 def test_register_rejects_weak_password(client):
     resp = client.post("/api/v1/auth/register", json={
         "email": "weak@example.com", "username": "weakuser",

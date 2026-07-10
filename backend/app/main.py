@@ -95,10 +95,20 @@ Base = declarative_base()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
+# Por padrao o FastAPI expoe /docs, /redoc e /openapi.json publicamente, sem
+# autenticacao - o schema completo da API (todas as rotas, modelos, etc) fica
+# visivel pra qualquer visitante. Pra uma instancia pessoal/privada (ver
+# README) isso nao faz sentido; ENABLE_DOCS=false desliga os tres. Padrao
+# "true" preserva o comportamento de sempre em dev local.
+_ENABLE_DOCS = os.environ.get("ENABLE_DOCS", "true").lower() not in ("false", "0", "no")
+
 app = FastAPI(
     title="Study OS API",
     description="Plataforma completa para estudantes",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/docs" if _ENABLE_DOCS else None,
+    redoc_url="/redoc" if _ENABLE_DOCS else None,
+    openapi_url="/openapi.json" if _ENABLE_DOCS else None,
 )
 
 # CORS

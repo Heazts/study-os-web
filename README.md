@@ -61,9 +61,11 @@ desenvolvimento primeiro: `pip install -r backend/requirements-dev.txt`.
 
 ### Variáveis de ambiente do backend
 
-Copie `backend/.env.example` para `backend/.env` e ajuste:
-- `SECRET_KEY` — gere uma com `python -c "import secrets; print(secrets.token_hex(32))"`. Sem isso o backend funciona, mas gera uma chave aleatória a cada restart — todos os tokens de login emitidos antes ficam inválidos.
-- `REGISTRATION_CODE` — se definida, exige esse código na tela de cadastro (uso pessoal/privado). Em branco, cadastro fica aberto.
+Copie `backend/.env.example` para `backend/.env` e ajuste `SECRET_KEY`
+(gere uma com `python -c "import secrets; print(secrets.token_hex(32))"`).
+Sem isso o backend funciona, mas gera uma chave aleatória a cada restart —
+todos os tokens de login emitidos antes ficam inválidos. Demais variáveis
+opcionais estão documentadas com comentários no próprio arquivo.
 
 ## 🐳 Docker (dois containers, para dev/produção "de verdade")
 
@@ -93,9 +95,8 @@ requisição depois disso demora um pouco mais pra responder).
 1. Crie o banco primeiro (Supabase ou Neon, veja abaixo) e tenha a connection string em mãos.
 2. Em [render.com](https://render.com), **New +** → **Blueprint** → conecte
    este repositório. O `render.yaml` na raiz já configura o Web Service
-   (`rootDir: backend`, build/start commands, `SECRET_KEY` gerada
-   automaticamente) — só falta colar `DATABASE_URL` e `REGISTRATION_CODE`
-   quando pedido.
+   sozinho — só falta preencher as variáveis que ele pedir (veja
+   `backend/.env.example` para o que cada uma significa).
 3. Aguarde o deploy. A URL fica algo como `https://study-os-backend.onrender.com`.
 4. Edite `js/config.js`: troque o placeholder pela URL real do seu Web
    Service, commit e push.

@@ -1,0 +1,969 @@
+/* ============================================================
+   STUDY OS — sistema visual neutro, inspirado no design da Apple
+   (superfícies claras, um único acento de cor, cantos suaves,
+   sombras discretas, tipografia do sistema).
+   ============================================================ */
+
+:root {
+    /* Superfícies neutras */
+    --surface:      #F5F5F7;
+    --surface-line: #E5E5EA;
+    --surface-card: #FFFFFF;
+    --ink:          #1D1D1F;
+    --ink-soft:     #6E6E73;
+    --ink-faint:    #86868B;
+
+    /* Sidebar clara — como a barra lateral do Finder/Configurações do macOS:
+       quase branca, com um divisor bem sutil, não um painel escuro. */
+    --sidebar-bg:        #FBFBFD;
+    --sidebar-line:      #E5E5EA;
+    --sidebar-text:      #1D1D1F;
+    --sidebar-text-soft: #6E6E73;
+
+    /* Painel escuro (hero do dashboard, avatar) — usado só em alguns pontos
+       pontuais, como as seções de fundo preto do apple.com, não na navegação. */
+    --accent-panel-bg: #1D1D1F;
+
+    /* Acento principal (azul, como o CTA em apple.com/iOS) */
+    --accent:      #0071E3;
+    --accent-deep: #0058B0;
+
+    /* Cores de sistema (sucesso, aviso, perigo, acento secundário) — mesma
+       família das "system colors" usadas em SF Symbols/iOS/macOS. */
+    --success:      #34C759;
+    --success-deep: #248A3D;
+    --warning:      #FF9F0A;
+    --warning-deep: #C06C00;
+    --danger:       #FF3B30;
+    --danger-deep:  #D70015;
+    --secondary-accent:      #5E5CE6;
+    --secondary-accent-deep: #4644B8;
+
+    /* Cor de texto sobre fundos "tint" (badges/alerts) — trocam no escuro para manter contraste */
+    --tint-primary-text: var(--secondary-accent-deep);
+    --tint-success-text: var(--success-deep);
+    --tint-warning-text: #8A5300;
+    --tint-danger-text:  var(--danger-deep);
+
+    --radius-card: 16px;
+    --radius-control: 12px;
+    --shadow-card: 0 1px 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04), 0 10px 24px rgba(0,0,0,0.05);
+    --shadow-card-lift: 0 2px 4px rgba(0,0,0,0.04), 0 16px 36px rgba(0,0,0,0.08);
+
+    /* Curva de easing "Apple-like": aceleração suave e chegada macia, sem o
+       ricochete abrupto de um ease padrão do navegador. */
+    --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ============================================================
+   MODO ESCURO
+   ============================================================ */
+
+:root[data-theme="dark"] {
+    /* Preto puro (#000) rende muito pesado numa tela LCD comum (o preto de
+       OLED é bem diferente) — usamos a mesma escada de cinzas do modo escuro
+       do macOS (janela/conteúdo/divisor), sem nunca chegar no preto absoluto. */
+    --surface:      #1C1C1E;
+    --surface-line: #3A3A3C;
+    --surface-card: #2C2C2E;
+    --ink:          #F5F5F7;
+    --ink-soft:     #98989D;
+    --ink-faint:    #6E6E73;
+
+    --sidebar-bg:        #1C1C1E;
+    --sidebar-line:      #3A3A3C;
+    --sidebar-text:      #F5F5F7;
+    --sidebar-text-soft: #98989D;
+
+    --accent-panel-bg: #2C2C2E;
+
+    --accent:      #0A84FF;
+    --accent-deep: #409CFF;
+
+    --success:      #30D158;
+    --success-deep: #4CD964;
+    --warning:      #FF9F0A;
+    --warning-deep: #FFB340;
+    --danger:       #FF453A;
+    --danger-deep:  #FF6961;
+    --secondary-accent:      #7D7AFF;
+    --secondary-accent-deep: #9F9DFF;
+
+    --tint-primary-text: #B3B1FF;
+    --tint-success-text: #6FDE8E;
+    --tint-warning-text: #FFC773;
+    --tint-danger-text:  #FF8981;
+
+    --shadow-card: 0 1px 1px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.35), 0 10px 24px rgba(0,0,0,0.4);
+    --shadow-card-lift: 0 2px 4px rgba(0,0,0,0.35), 0 16px 36px rgba(0,0,0,0.5);
+}
+
+/* ============================================================
+   MODO VIDRO — material translúcido/"vibrancy", como o iOS: um fundo
+   colorido suave por trás, e painéis de vidro fosco (blur) por cima, em vez
+   de superfícies opacas.
+   ============================================================ */
+
+:root[data-theme="glass"] {
+    --surface:      #E7ECF6;
+    --surface-line: rgba(60,60,67,0.18);
+    --surface-card: rgba(255,255,255,0.6);
+    --ink:          #1D1D1F;
+    --ink-soft:     #48484A;
+    --ink-faint:    #6E6E73;
+
+    --sidebar-bg:        rgba(255,255,255,0.45);
+    --sidebar-line:      rgba(60,60,67,0.15);
+    --sidebar-text:      #1D1D1F;
+    --sidebar-text-soft: #48484A;
+
+    --accent-panel-bg: rgba(29,29,31,0.65);
+
+    --shadow-card: 0 1px 1px rgba(0,0,0,0.03), 0 4px 12px rgba(31,38,71,0.08), 0 16px 32px rgba(31,38,71,0.1);
+    --shadow-card-lift: 0 6px 16px rgba(31,38,71,0.12), 0 24px 48px rgba(31,38,71,0.16);
+}
+
+:root[data-theme="glass"] body {
+    /* Faz as vezes de "papel de parede" do iOS por trás dos painéis foscos —
+       sem isso o blur não tem o que borrar e o efeito de vidro desaparece. */
+    background:
+        radial-gradient(circle at 15% 15%, rgba(10,132,255,0.35), transparent 45%),
+        radial-gradient(circle at 85% 25%, rgba(191,90,242,0.3), transparent 50%),
+        radial-gradient(circle at 30% 90%, rgba(255,159,10,0.22), transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(48,209,88,0.2), transparent 45%),
+        linear-gradient(180deg, #EEF2FA 0%, #E3E8F4 100%);
+    background-attachment: fixed;
+}
+
+:root[data-theme="glass"] .sidebar,
+:root[data-theme="glass"] .card,
+:root[data-theme="glass"] header.app-header,
+:root[data-theme="glass"] .modal,
+:root[data-theme="glass"] .auth-card,
+:root[data-theme="glass"] .toast,
+:root[data-theme="glass"] .hero-greeting {
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+:root[data-theme="glass"] .card,
+:root[data-theme="glass"] .modal,
+:root[data-theme="glass"] .auth-card,
+:root[data-theme="glass"] .toast {
+    border: 1px solid rgba(255,255,255,0.6);
+}
+
+:root[data-theme="glass"] header.app-header {
+    background: rgba(255,255,255,0.45);
+}
+
+:root[data-theme="glass"] .modal,
+:root[data-theme="glass"] .auth-card {
+    background: rgba(255,255,255,0.7);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--surface);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+.display-face {
+    /* Só tracking — o peso da fonte fica a cargo da classe Tailwind usada em
+       cada chamada (font-semibold/font-bold), pra não competir por
+       especificidade com ela. */
+    letter-spacing: -0.02em;
+}
+
+.mono-face {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+}
+
+h1, h2, h3 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-line);
+    position: relative;
+    overflow-y: auto;
+    height: 100%;
+    min-height: 100vh;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    padding: 28px 22px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.sidebar-brand .mark {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-size: 21px;
+    color: var(--sidebar-text);
+}
+
+.sidebar-brand .mark span {
+    color: var(--accent);
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    margin: 2px 12px;
+    color: var(--sidebar-text-soft);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: background-color 0.2s var(--ease-apple), color 0.2s var(--ease-apple);
+    cursor: pointer;
+}
+
+.sidebar-item i {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.sidebar-item:hover {
+    color: var(--sidebar-text);
+    background: rgba(128,128,128,0.1);
+}
+
+.sidebar-item.active {
+    color: #fff;
+    background: var(--accent);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+header.app-header {
+    background: color-mix(in srgb, var(--surface-card) 78%, transparent);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--surface-line);
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.card {
+    background: var(--surface-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    transition: transform 0.3s var(--ease-apple), box-shadow 0.3s var(--ease-apple);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-lift);
+}
+
+/* No claro, cartão branco sobre página cinza-clara já se distingue só com a
+   sombra (como os cards de produto da apple.com). No escuro, a página é preto
+   puro e a sombra sozinha some contra o preto — precisa de um contorno sutil
+   pra ainda separar visualmente o card do fundo. */
+:root[data-theme="dark"] .card {
+    border: 1px solid var(--surface-line);
+}
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 980px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease-apple), box-shadow 0.2s var(--ease-apple), transform 0.15s var(--ease-apple);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 12px rgba(0,113,227,0.28);
+}
+
+.btn-primary:hover {
+    background: var(--accent-deep);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.12), 0 6px 16px rgba(0,113,227,0.32);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--surface-line);
+}
+
+.btn-secondary:hover {
+    border-color: var(--ink-faint);
+    background: rgba(0,0,0,0.02);
+}
+
+.btn-outline {
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    background: transparent;
+}
+
+.btn-outline:hover {
+    background: rgba(0,113,227,0.06);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 4px 12px rgba(255,59,48,0.28);
+}
+
+.btn-danger:hover {
+    background: var(--danger-deep);
+}
+
+.btn-small {
+    padding: 7px 16px;
+    font-size: 13px;
+}
+
+.btn-large {
+    padding: 14px 28px;
+    font-size: 15px;
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.input-field {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--surface-line);
+    border-radius: var(--radius-control);
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--surface-card);
+    color: var(--ink);
+    transition: border-color 0.2s var(--ease-apple), box-shadow 0.2s var(--ease-apple);
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(0,113,227,0.15);
+}
+
+.input-field::placeholder {
+    color: var(--ink-faint);
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group .input-field {
+    padding-left: 40px;
+}
+
+.input-icon {
+    position: absolute;
+    left: 13px;
+    color: var(--ink-faint);
+    pointer-events: none;
+    font-size: 14px;
+}
+
+.label {
+    display: block;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+/* ============================================================
+   BADGES & STAMP (streak/conquista)
+   ============================================================ */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badge-primary { background: rgba(94,92,230,0.12); color: var(--tint-primary-text); }
+.badge-success { background: rgba(52,199,89,0.14); color: var(--tint-success-text); }
+.badge-warning { background: rgba(255,159,10,0.16); color: var(--tint-warning-text); }
+.badge-danger  { background: rgba(255,59,48,0.12); color: var(--tint-danger-text); }
+
+.stamp {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 74px;
+    height: 74px;
+    background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.stamp .stamp-num {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.stamp .stamp-label {
+    font-size: 8px;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-slide-in { animation: slideIn 0.25s ease-out; }
+.animate-fade-in { animation: fadeIn 0.25s ease-out; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.25s var(--ease-apple);
+}
+
+.modal {
+    background: var(--surface-card);
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 30px 70px rgba(0,0,0,0.28);
+    max-width: 480px;
+    width: 90%;
+    overflow: hidden;
+    animation: slideIn 0.3s var(--ease-apple);
+}
+
+.modal-header {
+    padding: 22px 26px;
+    border-bottom: 1px solid var(--surface-line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 { font-size: 19px; }
+
+.modal-body { padding: 24px 26px; }
+
+.modal-footer {
+    padding: 18px 26px;
+    border-top: 1px solid var(--surface-line);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* ============================================================
+   ALERTS & TOAST
+   ============================================================ */
+
+.alert {
+    padding: 14px 16px;
+    border-radius: var(--radius-control);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    font-size: 14px;
+}
+
+.alert-info    { background: rgba(94,92,230,0.08); color: var(--tint-primary-text); border-left: 3px solid var(--secondary-accent); }
+.alert-success { background: rgba(52,199,89,0.1); color: var(--tint-success-text); border-left: 3px solid var(--success); }
+.alert-warning { background: rgba(255,159,10,0.12); color: var(--tint-warning-text); border-left: 3px solid var(--warning); }
+.alert-danger  { background: rgba(255,59,48,0.08); color: var(--tint-danger-text); border-left: 3px solid var(--danger); }
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface-card);
+    padding: 14px 18px;
+    border-radius: var(--radius-control);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08), var(--shadow-card-lift);
+    animation: slideIn 0.3s var(--ease-apple);
+    z-index: 2000;
+    max-width: 380px;
+    font-size: 14px;
+    font-weight: 500;
+    border-left: 4px solid var(--ink);
+}
+
+.toast.success { border-left-color: var(--success); }
+.toast.error   { border-left-color: var(--danger); }
+.toast.warning { border-left-color: var(--warning); }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-line); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ============================================================
+   AUTH (login/registro)
+   ============================================================ */
+
+.auth-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--surface);
+}
+
+.auth-card {
+    background: var(--surface-card);
+    border-radius: 22px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 30px 70px rgba(0,0,0,0.12);
+    width: 100%;
+    max-width: 420px;
+    padding: 44px 38px;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-card h1 {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+}
+
+.auth-card .sub {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 28px;
+}
+
+.auth-switch {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 18px;
+}
+
+.auth-switch button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* ============================================================
+   DASHBOARD HERO
+   ============================================================ */
+
+.hero-greeting {
+    background: var(--accent-panel-bg);
+    border-radius: 20px;
+    padding: 34px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1), 0 16px 36px rgba(0,0,0,0.22);
+}
+
+.hero-greeting::after {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,113,227,0.35), transparent 70%);
+}
+
+.hero-greeting .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 6px;
+}
+
+.hero-greeting h2 {
+    color: #fff;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 6px;
+}
+
+.hero-greeting p {
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--accent), var(--secondary-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.truncate-line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.truncate-lines { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1023px) {
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        height: 100vh;
+        z-index: 900;
+        width: 260px;
+        transition: left 0.25s ease;
+    }
+    .sidebar.open { left: 0; }
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 890;
+    animation: fadeIn 0.2s ease;
+}
+
+@media (min-width: 1024px) {
+    .sidebar-backdrop { display: none; }
+}
+
+@media (max-width: 640px) {
+    .modal { width: 95%; }
+    .btn { width: 100%; justify-content: center; }
+    .auth-card { padding: 30px 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================================
+   SIMULADO ENEM — alternativas de questão
+   ============================================================ */
+
+.enem-option {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border: 1.5px solid var(--surface-line);
+    border-radius: 12px;
+    background: var(--surface-card);
+    transition: all 0.2s var(--ease-apple);
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--ink);
+    overflow: hidden;
+}
+
+.enem-option-select {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease-apple), transform 0.15s var(--ease-apple);
+}
+
+.enem-option-select:hover {
+    background: rgba(0,113,227,0.04);
+}
+
+/* Feedback visual do gesto de "segurar para cortar" (ver toggleCrossOut em screens.js) */
+.enem-option-select.pressing {
+    background: rgba(255,59,48,0.1);
+    transform: scale(0.99);
+}
+
+.enem-option.answered .enem-option-select {
+    cursor: default;
+}
+
+.enem-option .enem-letter {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.enem-option.correct {
+    border-color: var(--success);
+    background: rgba(52,199,89,0.08);
+}
+.enem-option.correct .enem-letter {
+    background: var(--success);
+    color: #fff;
+}
+
+.enem-option.incorrect {
+    border-color: var(--danger);
+    background: rgba(255,59,48,0.06);
+}
+.enem-option.incorrect .enem-letter {
+    background: var(--danger);
+    color: #fff;
+}
+
+.enem-option.disabled-choice {
+    opacity: 0.6;
+}
+
+/* "Cortar" (eliminar) alternativa — não seleciona, só risca visualmente.
+   Acionado ao segurar (long-press) a alternativa, arrastar pro lado, ou
+   clique com o botão direito — ver optionsBlock em screens.js. */
+.enem-crossed-text {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.enem-option.crossed-out .enem-letter {
+    opacity: 0.5;
+}
+
+/* Arrastar (swipe) o cartão da questão para navegar */
+.enem-card-drag-wrapper {
+    touch-action: pan-y;
+    cursor: grab;
+}
+
+.enem-card-drag-wrapper:active {
+    cursor: grabbing;
+}
+
+.enem-swipe-hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+}
+
+@media (min-width: 1024px) {
+    /* Em telas grandes o "arraste" via mouse é menos natural — a dica só
+       atrapalha; os botões Anterior/Próxima já resolvem bem nesse caso. */
+    .enem-swipe-hint { display: none; }
+}
+
+.enem-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-line);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.enem-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.25s ease;
+}
+
+.enem-question-img {
+    max-width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--surface-line);
+    margin: 12px 0;
+}
+
+/* Texto-base (enunciado) — separado visualmente do comando da questão */
+.enem-context-box {
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-left: 3px solid var(--ink-faint);
+    border-radius: 10px;
+    padding: 16px 18px;
+}
+
+.enem-context-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+}
+
+.enem-context-box > div {
+    line-height: 1.7;
+}
+
+.enem-context-box .enem-question-img {
+    display: block;
+    margin: 10px 0;
+}
+
+/* Comando da questão — o que está sendo perguntado, destacado do texto-base */
+.enem-prompt {
+    font-weight: 600;
+    color: var(--ink);
+    padding-left: 14px;
+    border-left: 3px solid var(--accent);
+}
+
+.enem-nav-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.enem-nav-dot {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1.5px solid var(--surface-line);
+    background: var(--surface-card);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.enem-nav-dot:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.enem-nav-dot.current {
+    border-color: var(--accent);
+    border-width: 2px;
+    color: var(--ink);
+}
+
+.enem-nav-dot.correct {
+    background: var(--success);
+    border-color: var(--success);
+    color: #fff;
+}
+
+.enem-nav-dot.incorrect {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+/* Keyboard focus visibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: study-os-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - study-os-db:/app/data
+    environment:
+      # Precisa apontar para dentro do volume montado acima (/app/data), senao
+      # o banco grava em /app/study_os.db — fora do volume "persistente" — e os
+      # dados somem toda vez que o container e recriado.
+      - DATABASE_URL=sqlite:////app/data/study_os.db
+      # Defina SECRET_KEY no seu shell/`.env` antes de rodar `docker-compose up`
+      # (ex.: `export SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_hex(32))")`).
+      # Sem isso o backend gera uma chave aleatoria a cada restart do container
+      # (tokens antigos deixam de ser validos, mas nunca fica num valor previsivel).
+      - SECRET_KEY=${SECRET_KEY:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/docs')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: study-os-web
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  study-os-db:
+    driver: local

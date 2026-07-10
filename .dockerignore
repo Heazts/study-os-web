@@ -1,0 +1,26 @@
+# Ignora tudo dentro de backend/ (inclui .env, study_os.db, tests/,
+# .pytest_cache/, requirements-dev.txt) exceto o que o Dockerfile da raiz
+# (imagem unica do Hugging Face) precisa copiar: o codigo da API e as
+# dependencias de producao.
+backend/*
+!backend/app/
+!backend/app/**
+!backend/requirements.txt
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+server.py
+start_all.py
+docker-compose.yml
+Dockerfile
+Dockerfile.frontend
+nginx.conf
+__pycache__/
+*.pyc
+.pytest_cache/
+*.md

@@ -1,0 +1,14 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+sqlalchemy==2.0.36
+pydantic==2.12.0
+PyJWT==2.10.1
+bcrypt==4.3.0
+python-multipart==0.0.9
+httpx==0.28.1
+Pillow==11.2.1
+# Driver para Postgres (ex.: DATABASE_URL apontando para Supabase/Neon) -
+# so' e' realmente importado quando DATABASE_URL usa postgresql://; com
+# sqlite:// (padrao) esta dependencia fica sem uso, mas nao tem custo manter
+# instalada (ja vem como wheel binario, sem precisar de libpq no sistema).
+psycopg2-binary==2.9.10

@@ -2,6 +2,10 @@
  * CONFIG.JS - Configurações da Aplicação Study OS
  */
 
+const GITHUB_PAGES_HOSTS = [
+    'SEU-USUARIO.github.io'
+];
+
 const CONFIG = {
     // API Configuration
     API: {
@@ -15,7 +19,7 @@ const CONFIG = {
         // caso é preciso a URL completa do backend: troque abaixo pela URL
         // do seu Web Service depois de criá-lo (formato
         // https://SEU-SERVICO.onrender.com).
-        BASE_URL: window.location.hostname.endsWith('github.io')
+        BASE_URL: GITHUB_PAGES_HOSTS.includes(window.location.hostname)
             ? 'https://study-os-backend-w8o0.onrender.com'
             : '',
         TIMEOUT: 10000,
